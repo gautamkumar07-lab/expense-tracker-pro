@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Tracker Pro</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>    <style>
+        *{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:30px;
+background:#0f172a;
+overflow-x:hidden;
+}
+
+.bg{
+position:fixed;
+width:100%;
+height:100%;
+background:
+linear-gradient(
+135deg,
+#7c3aed,
+#06b6d4
+);
+z-index:-1;
+}
+
+.container{
+
+width:100%;
+max-width:1200px;
+
+backdrop-filter:blur(20px);
+
+background:
+rgba(255,255,255,0.1);
+
+border:
+1px solid rgba(255,255,255,0.2);
+
+padding:30px;
+
+border-radius:25px;
+
+box-shadow:
+0 20px 50px
+rgba(0,0,0,0.4);
+
+color:white;
+
+transform-style:
+preserve-3d;
+}
+
+h1{
+
+text-align:center;
+
+margin-bottom:25px;
+
+font-size:2.5rem;
+}
+
+.top-buttons{
+
+display:flex;
+
+gap:10px;
+
+margin-bottom:20px;
+}
+
+.form-card{
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fit,minmax(200px,1fr));
+
+gap:15px;
+}
+
+input,
+select{
+
+padding:14px;
+
+border:none;
+
+border-radius:15px;
+
+background:
+rgba(255,255,255,.2);
+
+color:white;
+
+outline:none;
+}
+
+input::placeholder{
+color:white;
+}
+
+button{
+
+cursor:pointer;
+
+border:none;
+
+padding:14px;
+
+border-radius:15px;
+
+background:
+linear-gradient(
+45deg,
+#8b5cf6,
+#06b6d4
+);
+
+color:white;
+
+font-weight:bold;
+
+transition:.3s;
+}
+
+button:hover{
+
+transform:
+translateY(-5px);
+
+box-shadow:
+0 8px 25px
+rgba(0,0,0,.3);
+}
+
+.add-btn{
+grid-column:1/-1;
+}
+
+.stats{
+
+margin-top:25px;
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fit,minmax(250px,1fr));
+
+gap:20px;
+}
+
+.card{
+
+padding:25px;
+
+border-radius:20px;
+
+background:
+rgba(255,255,255,.12);
+
+text-align:center;
+
+box-shadow:
+0 10px 25px
+rgba(0,0,0,.2);
+}
+
+.card h2{
+margin-top:10px;
+}
+
+.chart-box{
+
+margin-top:30px;
+
+background:
+rgba(255,255,255,.12);
+
+padding:20px;
+
+border-radius:20px;
+}
+
+.title{
+
+margin-top:30px;
+
+margin-bottom:15px;
+
+text-align:center;
+}
+
+#transactionList li{
+    padding:20px;
+    margin:15px 0;
+    border-radius:20px;
+    font-size:18px;
+
+    background:rgba(
+        255,
+        255,
+        255,
+        0.15
+    );
+
+    backdrop-filter:blur(10px);
+
+    line-height:1.8;
+}
+
+.income{
+border-left:6px solid #10b981;
+}
+
+.expense{
+border-left:6px solid #ef4444;
+}
+
+.dark{
+
+background:#020617;
+}
+
+.dark .container{
+
+background:
+rgba(15,23,42,.9);
+}
+
+
+    </style>
+   
+
+</head>
+
+<body>
+
+    <div class="bg"></div>
+
+    <div class="container">
+
+        <h1>💰 Expense Tracker Pro</h1>
+
+        <!-- Top Buttons -->
+        <div class="top-buttons">
+
+            <button onclick="toggleDarkMode()">
+                🌙 Dark Mode
+            </button>
+
+            <button onclick="exportCSV()">
+                📁 Export CSV
+            </button>
+
+            <button onclick="exportPDF()">
+                📄 Export PDF
+            </button>
+
+        </div>
+
+        <!-- Form -->
+        <div class="form-card">
+
+            <input type="text"
+                id="description"
+                placeholder="Description">
+
+            <input type="number"
+                id="amount"
+                placeholder="Amount">
+
+            <input type="date"
+                id="date">
+
+            <select id="type">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+
+            <select id="category">
+                <option>Salary</option>
+                <option>Food</option>
+                <option>Shopping</option>
+                <option>Travel</option>
+                <option>Bills</option>
+                <option>Other</option>
+            </select>
+
+            <select id="account">
+                <option>Cash</option>
+                <option>Bank</option>
+                <option>UPI</option>
+            </select>
+
+            <input type="number"
+                id="budget"
+                placeholder="Monthly Budget">
+
+            <button class="add-btn"
+                onclick="addTransaction()">
+                ➕ Add Transaction
+            </button>
+
+        </div>
+
+        <!-- Search -->
+
+        <input type="text"
+            id="search"
+            placeholder="🔍 Search Transaction"
+            onkeyup="searchTransaction()">
+
+        <!-- Stats -->
+
+        <div class="stats">
+
+            <div class="card">
+                Income
+                <h2 id="income">0</h2>
+            </div>
+
+            <div class="card">
+                Expense
+                <h2 id="expense">0</h2>
+            </div>
+
+            <div class="card">
+                Balance
+                <h2 id="balance">0</h2>
+            </div>
+
+        </div>
+
+        <!-- Chart -->
+
+        <div class="chart-box">
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <!-- Transaction List -->
+
+        <h2 class="title">
+            Transactions
+        </h2>
+
+        <ul id="transactionList"></ul>
+
+    </div>
+
+    <!-- JS File -->
+    <script src="script.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+
+</html>
